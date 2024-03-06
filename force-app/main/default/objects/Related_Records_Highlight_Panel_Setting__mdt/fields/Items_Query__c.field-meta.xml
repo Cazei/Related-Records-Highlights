@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Items_Query__c</fullName>
+    <description>The query that should be used to fetch the items to display
+
+The query should use the :recordId parameter to indicate the &quot;Parent record&quot; id. Ex:
+
+To get all cases related to the account:
+SELECT Subject FROM Case WHERE AccountId = :recordId</description>
+    <externalId>false</externalId>
+    <fieldManageability>DeveloperControlled</fieldManageability>
+    <inlineHelpText>SOQL query for fetching hightlight items. The id of the parent record is passed as :recordId</inlineHelpText>
+    <label>Items Query</label>
+    <required>true</required>
+    <type>TextArea</type>
+</CustomField>

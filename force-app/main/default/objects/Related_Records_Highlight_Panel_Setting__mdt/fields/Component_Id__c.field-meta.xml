@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Component_Id__c</fullName>
+    <description>Identifies which instance of a Component that this highlight item should be displayed in. The Id here should be the same as entered on the Component in the Lightning Record Page.</description>
+    <externalId>false</externalId>
+    <fieldManageability>DeveloperControlled</fieldManageability>
+    <inlineHelpText>Identifies which instance of a Component that this highlight item should be displayed in. The Id here should be the same as entered on the Component in the Lightning Record Page.</inlineHelpText>
+    <label>Component Id</label>
+    <length>255</length>
+    <required>false</required>
+    <type>Text</type>
+    <unique>false</unique>
+</CustomField>
