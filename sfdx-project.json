@@ -2,11 +2,18 @@
   "packageDirectories": [
     {
       "path": "force-app",
-      "default": true
+      "default": true,
+      "package": "Related Records Highlights",
+      "versionName": "Version 0.1",
+      "versionNumber": "0.1.0.NEXT"
     }
   ],
   "name": "Salesforce-Related-Records-Highlights",
   "namespace": "",
   "sfdcLoginUrl": "https://login.salesforce.com",
-  "sourceApiVersion": "59.0"
+  "sourceApiVersion": "59.0",
+  "packageAliases": {
+    "Related Records Highlights": "0Ho7Q000000Kz1jSAC",
+    "Related Records Highlights@0.1.0-5": "04t7Q000000IM2VQAW"
+  }
 }
