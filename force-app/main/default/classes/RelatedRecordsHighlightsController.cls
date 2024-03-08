@@ -22,7 +22,7 @@ public with sharing class RelatedRecordsHighlightsController {
         String recordId,
         String componentId
     ) {
-        recordsSelector = new Selector();
+
         Map<String, List<String>> errorMap = new Map<String, List<String>>();
         try {
             List<HighlightItemWrapper> wrappersToReturn = new List<HighlightItemWrapper>();
@@ -31,6 +31,12 @@ public with sharing class RelatedRecordsHighlightsController {
                 throw new QueryException();
             }
 
+            //For DI
+            if(recordsSelector == null){
+                recordsSelector = new Selector();
+            }
+            
+            //For DI
             if(settings == null){
                 settings = Related_Records_Highlight_Panel_Setting__mdt.getAll();
             }
@@ -45,8 +51,13 @@ public with sharing class RelatedRecordsHighlightsController {
                 if (!componentIds.contains(componentId)) {
                     continue;
                 }
-
+               
                 HighlightItemWrapper wrapper = constructItemWrapper(recordId,itemIdIterator,setting);
+                if(wrapper?.errors != null){
+                    wrappersToReturn.add(wrapper);
+                    itemIdIterator++;
+                    continue;
+                }
 
                 //If the setting for the item says that empty items should be rendered.
                 if(setting.Show_Empty_Items__c && wrapper?.records?.isEmpty()){
@@ -103,6 +114,7 @@ public with sharing class RelatedRecordsHighlightsController {
                         formatErrorMessage(qe, setting.Item_Name__c)
                     };
                 }
+                System.debug(wrapper);
         return wrapper;
     }
 

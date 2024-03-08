@@ -37,6 +37,7 @@ public with sharing class RelatedRecordsHighlightsControllerTests {
         Assert.isNotNull(wrappers);
         Assert.areEqual(3,wrappers.size());
     }
+    
     @isTest
     private static void should_only_return_wrappers_for_the_provided_componentId() {
         // Test data setup
@@ -74,6 +75,7 @@ public with sharing class RelatedRecordsHighlightsControllerTests {
         Assert.isNotNull(wrappers);
         Assert.areEqual(2,wrappers.size());
     }
+
     @isTest
     private static void failed_query_should_return_wrapper_with_error() {
         // Test data setup
@@ -108,10 +110,12 @@ public with sharing class RelatedRecordsHighlightsControllerTests {
         Test.stopTest();
     
         // Asserts
+        Assert.isNotNull(wrappers,'There should be wrappers');
         Assert.isTrue(wrappers[0].errors.size() > 0,'The wrapper should have errors.');
         Assert.isTrue(wrappers[0].numOfItems == 0,'The wrapper record counter should be 0');
         Assert.isNull(wrappers[0].records,'There should be no records in this wrapper.');
     }
+
     @IsTest
     private static void generic_uncaught_exception_should_be_rethrown_as_aurahandeledException(){
         RelatedRecordsHighlightsController.throwException = true;
@@ -161,9 +165,65 @@ public with sharing class RelatedRecordsHighlightsControllerTests {
 
         // Asserts
         Assert.isTrue(wrappers[0].sortOrder < wrappers[1].sortOrder, 'The wrappers are not in the expected order');
-        Assert.isTrue(wrappers[1].sortOrder < wrappers[2].sortOrder, 'The wrappers are not in the expected order');
-        
+        Assert.isTrue(wrappers[1].sortOrder < wrappers[2].sortOrder, 'The wrappers are not in the expected order');    
     }
+
+    @isTest
+    private static void do_not_return_wrappers_without_records_if_show_empty_items_is_false() {
+        // Test data setup
+        List<Contact> fakeContacts = new List<Contact>();
+        List<Case> fakeCases = new List<Case>();
+
+        FakeSelector selector = new FakeSelector(fakeCases,fakeContacts);
+
+        Map<String, Related_Records_Highlight_Panel_Setting__mdt> settings = generateSettingsMap();
+
+        for(Related_Records_Highlight_Panel_Setting__mdt setting : settings.values()){
+            setting.Show_Empty_Items__c = false;
+        }
+
+        RelatedRecordsHighlightsController.settings = settings;
+        RelatedRecordsHighlightsController.recordsSelector = selector;
+
+        // Actual test
+        Test.startTest();
+        List<RelatedRecordsHighlightsController.HighlightItemWrapper> wrappers = RelatedRecordsHighlightsController.getHighlightItems('SomeId','AccountPage');
+        Test.stopTest();
+    
+        // Asserts
+        Assert.areEqual(0,wrappers.size());
+    }
+
+    @isTest
+    private static void return_wrappers_without_records_if_show_empty_items_is_true() {
+        // Test data setup
+        List<Contact> fakeContacts = new List<Contact>();
+        List<Case> fakeCases = new List<Case>();
+
+        FakeSelector selector = new FakeSelector(fakeCases,fakeContacts);
+
+        Map<String, Related_Records_Highlight_Panel_Setting__mdt> settings = generateSettingsMap();
+
+        for(Related_Records_Highlight_Panel_Setting__mdt setting : settings.values()){
+            setting.Show_Empty_Items__c = true;
+        }
+
+        RelatedRecordsHighlightsController.settings = settings;
+        RelatedRecordsHighlightsController.recordsSelector = selector;
+
+        // Actual test
+        Test.startTest();
+        List<RelatedRecordsHighlightsController.HighlightItemWrapper> wrappers = RelatedRecordsHighlightsController.getHighlightItems('SomeId','AccountPage');
+        Test.stopTest();
+    
+        // Asserts
+        Assert.areEqual(3,wrappers.size());
+        Assert.areEqual(0,wrappers[0].records.size());
+        Assert.areEqual(0,wrappers[1].records.size());
+        Assert.areEqual(0,wrappers[2].records.size());
+    }
+
+
 
     private static Map<String,Related_Records_Highlight_Panel_Setting__mdt> generateSettingsMap(){
 
@@ -176,7 +236,8 @@ public with sharing class RelatedRecordsHighlightsControllerTests {
             Icon__c = 'standard:case',
             Sort_Order__c = 2,
             Table_Columns__c = 'Subject,Type',
-            Component_Id__c = 'AccountPage'
+            Component_Id__c = 'AccountPage',
+            Show_Empty_Items__c = true
         );
 
         Related_Records_Highlight_Panel_Setting__mdt contactsSetting = new Related_Records_Highlight_Panel_Setting__mdt(
@@ -188,7 +249,8 @@ public with sharing class RelatedRecordsHighlightsControllerTests {
             Icon__c = 'standard:contact',
             Sort_Order__c = 0,
             Table_Columns__c = 'Name,Title',
-            Component_Id__c = 'AccountPage'
+            Component_Id__c = 'AccountPage',
+            Show_Empty_Items__c = true
         );
 
         Related_Records_Highlight_Panel_Setting__mdt unhappyContactsSetting = new Related_Records_Highlight_Panel_Setting__mdt(
@@ -200,7 +262,8 @@ public with sharing class RelatedRecordsHighlightsControllerTests {
             Icon__c = 'standard:contact',
             Sort_Order__c = 1,
             Table_Columns__c = 'Name,Title',
-            Component_Id__c = 'AccountPage'
+            Component_Id__c = 'AccountPage',
+            Show_Empty_Items__c = true
         );
 
         Map<String,Related_Records_Highlight_Panel_Setting__mdt> settingsMap = new Map<String,Related_Records_Highlight_Panel_Setting__mdt>{
