@@ -22,6 +22,7 @@ export default class relatedRecordsHighlights extends LightningElement {
     currentPage = 1;
     maxPage;
 
+    renderComponent;
     showTable = false;
     showItemSpacer = false;
     displayError = false;
@@ -53,6 +54,12 @@ export default class relatedRecordsHighlights extends LightningElement {
     }
     parseData(data) {
         this.items = data;
+
+        if(this.items.length === 0){
+            this.renderComponent = false;
+            return;
+        }
+        this.renderComponent = true;
         this.items.forEach((item) => {
             this.setRecordUrl(item);
             this.constructTableColumn(item);
@@ -90,7 +97,7 @@ export default class relatedRecordsHighlights extends LightningElement {
             this.closeTable();
         }
 
-        this.showTable = true;
+        this.showTable = !this.showTable;
 
         if (item.errors) {
             this.expandedItemRecords = undefined;

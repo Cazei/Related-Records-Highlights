@@ -9,6 +9,14 @@ public with sharing class RelatedRecordsHighlightsController {
     @TestVisible
     public static Boolean throwQueryException = false;
 
+    /**
+     * @desription Takes a record and Compoent Id, and uses them to get the data for the items 
+     * that has been defined in the custom metadata records for the component Id. 
+     * @param recordId Id of the record where the component is placed
+     * @param componentId The Id of the compoenent placed in a Lightning record page
+     * @return  `List<HighlightItemWrapper>` A list of highlight items to be rendered in the lightning page
+     * 
+     */
     @AuraEnabled
     public static List<HighlightItemWrapper> getHighlightItems(
         String recordId,
@@ -17,11 +25,11 @@ public with sharing class RelatedRecordsHighlightsController {
         recordsSelector = new Selector();
         Map<String, List<String>> errorMap = new Map<String, List<String>>();
         try {
+            List<HighlightItemWrapper> wrappersToReturn = new List<HighlightItemWrapper>();
+
             if(Test.isRunningTest() && throwException){
                 throw new QueryException();
             }
-
-            List<HighlightItemWrapper> wrappers = new List<HighlightItemWrapper>();
 
             if(settings == null){
                 settings = Related_Records_Highlight_Panel_Setting__mdt.getAll();
@@ -38,14 +46,36 @@ public with sharing class RelatedRecordsHighlightsController {
                     continue;
                 }
 
-                Map<String, String> binds = new Map<String, String>{
-                    'recordId' => recordId
-                };
-                String query = setting.Items_Query__c;
+                HighlightItemWrapper wrapper = constructItemWrapper(recordId,itemIdIterator,setting);
 
-                String currentItemId = 'HI' + itemIdIterator;
+                //If the setting for the item says that empty items should be rendered.
+                if(setting.Show_Empty_Items__c && wrapper?.records?.isEmpty()){
+                    wrappersToReturn.add(wrapper);
+                    itemIdIterator++;
+                } else if(!wrapper?.records?.isEmpty()){
+                    wrappersToReturn.add(wrapper);
+                    itemIdIterator++;
+                }
+            }
 
-                HighlightItemWrapper wrapper = new HighlightItemWrapper();
+            //Sort the wrappers so that they're rendered in the order thats been set in the setting.
+            wrappersToReturn.sort();
+            return wrappersToReturn;
+        } catch (Exception e) {
+            System.debug(e.getStackTraceString());
+            throw new AuraHandledException(e.getMessage());
+        }
+    }
+
+    private static HighlightItemWrapper constructItemWrapper(String recordId,Integer itemIdIterator,Related_Records_Highlight_Panel_Setting__mdt setting){
+        
+        String currentItemId = 'HI' + itemIdIterator;
+        String recordsQuery = setting.Items_Query__c;
+        Map<String, String> binds = new Map<String, String>{
+            'recordId' => recordId
+        };
+        
+        HighlightItemWrapper wrapper = new HighlightItemWrapper();
                 wrapper.itemId = currentItemId;
                 wrapper.header = setting.Item_Name__c;
                 wrapper.icon = setting.Icon__c;
@@ -55,7 +85,7 @@ public with sharing class RelatedRecordsHighlightsController {
                         throw new QueryException('Testing Exception');
                     }
                     List<SObject> records = recordsSelector.getRecordsDynamic(
-                        query,
+                        recordsQuery,
                         binds,
                         AccessLevel.USER_MODE
                     );
@@ -73,15 +103,7 @@ public with sharing class RelatedRecordsHighlightsController {
                         formatErrorMessage(qe, setting.Item_Name__c)
                     };
                 }
-                wrappers.add(wrapper);
-                itemIdIterator++;
-            }
-            wrappers.sort();
-            return wrappers;
-        } catch (Exception e) {
-            System.debug(e.getStackTraceString());
-            throw new AuraHandledException(e.getMessage());
-        }
+        return wrapper;
     }
 
     private static String formatErrorMessage(Exception ex, String itemName) {
@@ -111,6 +133,7 @@ public with sharing class RelatedRecordsHighlightsController {
         return fieldList;
     }
 
+    //Virtual for DI purposes.
     @TestVisible
     private virtual with sharing class Selector {
         public virtual List<SObject> getRecordsDynamic (String query,Map<String,String> binds,AccessLevel queryMode){

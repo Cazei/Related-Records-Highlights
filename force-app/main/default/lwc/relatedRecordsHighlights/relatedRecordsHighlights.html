@@ -1,5 +1,5 @@
 <template>
-    <lightning-card variant="Narrow" hide-header>
+    <lightning-card lwc:if={renderComponent} variant="Narrow" hide-header>
         <div class="slds-p-horizontal_small">
             <div lwc:if={error} class="slds-align_absolute-center">
                 <div
